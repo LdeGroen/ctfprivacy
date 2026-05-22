@@ -2,7 +2,11 @@ import React, { useEffect, useState } from 'react';
 import { Globe, Mail } from 'lucide-react';
 
 const API_URL = process.env.REACT_APP_API_URL || 'https://backend.cafetheaterfestival.nl';
-const SLUG = process.env.REACT_APP_PRIVACY_SLUG || 'app';
+
+function getSlug() {
+  const params = new URLSearchParams(window.location.search);
+  return params.get('slug') || process.env.REACT_APP_PRIVACY_SLUG || 'app';
+}
 
 export default function App() {
   const [language, setLanguage] = useState('nl');
@@ -11,6 +15,7 @@ export default function App() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
+    const slug = getSlug();
     fetch(`${API_URL}/api/public/privacy-policies?per_page=100`)
       .then(res => {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -18,7 +23,7 @@ export default function App() {
       })
       .then(json => {
         const records = json.data || json;
-        const match = records.find(p => p.slug === SLUG) || records[0] || null;
+        const match = records.find(p => p.slug === slug) || records[0] || null;
         setPolicy(match);
       })
       .catch(err => setError(err.message))
