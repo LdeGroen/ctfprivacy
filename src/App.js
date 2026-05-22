@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Globe, Mail } from 'lucide-react';
 
-const API_URL = process.env.REACT_APP_API_URL || 'https://ctfbackend.cafetheaterfestival.nl';
+const API_URL = process.env.REACT_APP_API_URL || 'https://backend.cafetheaterfestival.nl';
 const SLUG = process.env.REACT_APP_PRIVACY_SLUG || 'app';
 
 export default function App() {
