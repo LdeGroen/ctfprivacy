@@ -5,53 +5,13 @@ on:
     branches: [master]
   workflow_dispatch:
 
+# De bouw- en uitrolstappen staan centraal in ctf-ui (hard falen bij een
+# ontbrekend secret of een lege build, concurrency, vaste hostsleutel).
+# Vastgezet op een tag: een wijziging daar raakt deze app pas bij een nieuwe tag.
 jobs:
   deploy:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci --no-audit --no-fund
-
-      - name: Build production bundle
-        run: npm run build
-        env:
-          # CRA promoveert lint-warnings naar errors als CI=true (GitHub default).
-          # We tonen warnings in CI maar laten de build niet falen erop.
-          CI: false
-          # De source map werd publiek meegeleverd: de broncode van deze app
-          # was zonder inloggen leesbaar op te halen. Scheelt bovendien
-          # ongeveer een derde van de bouwtijd.
-          GENERATE_SOURCEMAP: false
-
-      # Bewust géén "if: always()": faalt de build, dan mag deze stap niet
-      # draaien. react-scripts leegt build/ al vóór het compileren, dus na een
-      # mislukte build zou rsync --delete de live site vervangen door een lege
-      # pagina. Stond hier eerst wél (erfenis van de oude Plesk-stap).
-      - name: Ook naar de nieuwe server (rsync over SSH)
-        env:
-          SSH_KEY: ${{ secrets.NIEUWE_SERVER_KEY }}
-          SSH_USER: ${{ secrets.NIEUWE_SERVER_USER }}
-          DOEL_PAD: ${{ secrets.NIEUWE_SERVER_PAD }}
-        run: |
-          # Ontbreekt een secret, dan hard falen in plaats van stil slagen: anders
-          # lijkt de uitrol gelukt terwijl er niets is gekopieerd. Een lege
-          # DOEL_PAD maakt van het doel htdocs// en dan wist --delete de hele htdocs.
-          if [ -z "$SSH_KEY" ] || [ -z "$SSH_USER" ] || [ -z "$DOEL_PAD" ]; then
-            echo "::error::NIEUWE_SERVER_KEY, _USER of _PAD ontbreekt — er is niets uitgerold."; exit 1
-          fi
-          # Een lege of halve build mag er niet doorheen glippen.
-          [ -s ./build/index.html ] || { echo "::error::build/index.html ontbreekt of is leeg — niets uitgerold."; exit 1; }
-          mkdir -p ~/.ssh
-          printf '%s\n' "$SSH_KEY" > ~/.ssh/nieuw_key
-          chmod 600 ~/.ssh/nieuw_key
-          rsync -az --delete \
-            -e "ssh -i ~/.ssh/nieuw_key -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null" \
-            ./build/ "$SSH_USER@167.233.167.13:htdocs/$DOEL_PAD/"
-          echo "gekopieerd naar de nieuwe server: $DOEL_PAD"
+    uses: LdeGroen/ctf-ui/.github/workflows/deploy-site.yml@deploy-v1
+    secrets:
+      SSH_KEY: ${{ secrets.NIEUWE_SERVER_KEY }}
+      SSH_USER: ${{ secrets.NIEUWE_SERVER_USER }}
+      DOEL_PAD: ${{ secrets.NIEUWE_SERVER_PAD }}
