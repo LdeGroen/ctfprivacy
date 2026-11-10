@@ -11,6 +11,9 @@ on:
 jobs:
   deploy:
     uses: LdeGroen/ctf-ui/.github/workflows/deploy-site.yml@deploy-v1
+    with:
+      # Vite lint niet zelf (sinds 10-11-2026 Vite i.p.v. react-scripts).
+      lint: true
     secrets:
       SSH_KEY: ${{ secrets.NIEUWE_SERVER_KEY }}
       SSH_USER: ${{ secrets.NIEUWE_SERVER_USER }}
