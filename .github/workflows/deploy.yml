@@ -10,10 +10,12 @@ on:
 # Vastgezet op een tag: een wijziging daar raakt deze app pas bij een nieuwe tag.
 jobs:
   deploy:
-    uses: LdeGroen/ctf-ui/.github/workflows/deploy-site.yml@deploy-v1
+    uses: LdeGroen/ctf-ui/.github/workflows/deploy-site.yml@deploy-v2
     with:
       # Vite lint niet zelf (sinds 10-11-2026 Vite i.p.v. react-scripts).
       lint: true
+      # Eigen sleutel, op de server beperkt tot deze map (audit INF-01).
+      beperkte-sleutel: true
     secrets:
       SSH_KEY: ${{ secrets.NIEUWE_SERVER_KEY }}
       SSH_USER: ${{ secrets.NIEUWE_SERVER_USER }}
