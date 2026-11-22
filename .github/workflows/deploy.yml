@@ -12,7 +12,7 @@ on:
 # Vastgezet op een tag: een wijziging daar raakt deze app pas bij een nieuwe tag.
 jobs:
   deploy:
-    uses: LdeGroen/ctf-ui/.github/workflows/deploy-site.yml@deploy-v3
+    uses: LdeGroen/ctf-ui/.github/workflows/deploy-site.yml@deploy-v4
     with:
       # Vite lint niet zelf (sinds 10-11-2026 Vite i.p.v. react-scripts).
       lint: true
